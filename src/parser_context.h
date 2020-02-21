@@ -22,14 +22,9 @@ class ParserContext {
             current_token = new_token;
         }
 
-        //TODO: fmt
         std::string get_value(void)
         {
-            std::ostringstream value_stream;
-            value_stream << line << ":" << column << " ";
-            value_stream << current_token.get_type();
-
-            return value_stream.str();
+            return current_token.get_value();
         }
 
         void new_line(void) {
@@ -39,5 +34,9 @@ class ParserContext {
 
         void step(void) {
             column++;
+        }
+
+        void step(int length) {
+            column += length;
         }
 };

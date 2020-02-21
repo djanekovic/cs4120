@@ -9,7 +9,10 @@ all: xic
 xic: $(OBJ)
 	$(CXX) $(CXXFLAGS) -o $@ $(OBJ) $(LDFLAGS)
 
-.PHONY: xi++
+.PHONY: ley.yy.cc
+
+lex.yy.cc: xi++-scanner.ll
+	flex -c++ -d $^
 
 clean:
 	rm -f $(OBJ)

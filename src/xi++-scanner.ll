@@ -2,37 +2,84 @@
 #include "xi_lexer.h"
 #define YY_NO_UNISTD_H
 #define yyterminate() return TokenType::End;
-#define YY_USER_ACTION ctx.step();
+#define HANDLE_TOKEN \
+    Token new_token(type, std::string(YYText()), lineno(), column + 1); \
+    ctx.set_token(new_token);                                           \
+    column += YYLeng();                                                 \
+    return type
+
+int column = 0;
 %}
 
-%option debug noyywrap
+%option debug noyywrap yylineno
 
-ID      [a-z][a-zA-Z0-9]*
+ID      [a-z][a-zA-Z0-9'_]*
 DIGIT   [0-9]
-KEYWORD (use|if|while|else|return|length|int|bool|true|false)
-STRING \".*\"
+STRING  \".*\"
+CHAR    \'[a-zA-Z]\'
 
 %%
-" "             {
-                    ctx.step();
+use       |
+if        |
+while     |
+else      |
+return    |
+length    |
+bool      |
+int       |
+true      |
+false           {
+                    TokenType type = TokenType::Keyword;
+                    HANDLE_TOKEN;
                 }
-{STRING}        {   printf("Procitao sam string %s\n", YYText()); }
-\n              {   ctx.new_line(); }
-[-]?{DIGIT}     {
-                    Token new_token(TokenType::Integer, std::string(YYText()));
-                    ctx.set_token(new_token);
-                    return TokenType::Integer;
+{ID}            {
+                    TokenType type = TokenType::Id;
+                    HANDLE_TOKEN;
                 }
-{KEYWORD}       {
-                    Token new_token(TokenType::Keyword, std::string(YYText()));
-                    ctx.set_token(new_token);
-                    return TokenType::Keyword;
+{CHAR}          {
+                    TokenType type = TokenType::Character;
+                    HANDLE_TOKEN;
                 }
-"-"|"!"|"*"|">>"|"/"|"%"|"+"|"-"|"<"|"<="|">="|">"|"=="|"!="|"&"|"|"       {
-                    Token new_token(TokenType::Symbol, std::string(YYText()));
-                    ctx.set_token(new_token);
-                    return TokenType::Symbol;
+" "             {   column += 1;    }
+{STRING}        {
+
+                    TokenType type = TokenType::String;
+                    HANDLE_TOKEN;
                 }
+[-]?[0-9]+      {
+                    TokenType type = TokenType::Integer;
+                    HANDLE_TOKEN;
+                }
+"-"         |
+"!"         |
+"*"         |
+">>"        |
+"/"         |
+"%"         |
+"+"         |
+"<"         |
+"<="        |
+">="        |
+">"         |
+"=="        |
+"!="        |
+"&"         |
+"["         |
+"]"         |
+":"         |
+"("         |
+")"         |
+"{"         |
+"}"         |
+"="         |
+";"         |
+"_"             {
+                    TokenType type = TokenType::Symbol;
+                    HANDLE_TOKEN;
+                }
+"//".*$         {   /* eat one line comments */  }
+\n              {   column = 0; }
+.               {   return TokenType::Error;    }
 %%
 
 int yyFlexLexer::yylex() {
