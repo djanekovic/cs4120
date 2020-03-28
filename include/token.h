@@ -1,5 +1,8 @@
 #pragma once
 
+#include <string>
+#include <sstream>
+
 enum class TokenType {Id, Integer, Character, String, Symbol, Keyword, End, Error};
 
 class Token {
@@ -23,8 +26,11 @@ class Token {
                 case TokenType::Integer:
                     type_str += "integer ";
                     break;
-                case TokenType::String:
+                case TokenType::Character:
                     type_str += "character ";
+                    break;
+                case TokenType::String:
+                    type_str += "string ";
                     break;
                 default:;
             }
