@@ -16,12 +16,10 @@ void XIDriver::trace_scanning(const std::vector<std::string> &filenames)
         for (TokenType type = lexer.yylex(ctx);
                 type != TokenType::End;
                 type = lexer.yylex(ctx)) {
+            std::cout << ctx.get_value() << std::endl;
             if (type == TokenType::Error) {
-                puts("error");
                 break;
             }
-
-            std::cout << ctx.get_value() << std::endl;
         }
     }
 }

@@ -17,8 +17,19 @@ class Token {
         Token(TokenType type, std::string value, int line, int column):
             type {type}, value{value}, line{line}, column{column} {}
 
+        //TODO: fmt
+        std::string get_value() {
+            std::ostringstream value_stream;
+            value_stream << line << ":" << column << " ";
+            value_stream << get_type();
+
+            return value_stream.str();
+        }
+
+    private:
         std::string get_type() {
             std::string type_str;
+
             switch(type) {
                 case TokenType::Id:
                     type_str += "id ";
@@ -38,21 +49,13 @@ class Token {
                     value.erase(value.begin());
                     value.erase(value.end() - 1);
                     break;
+                case TokenType::Error:
+                    type_str += "error:";
                 default:;
             }
 
             type_str += value;
 
             return type_str;
-        }
-
-
-        //TODO: fmt
-        std::string get_value() {
-            std::ostringstream value_stream;
-            value_stream << line << ":" << column << " ";
-            value_stream << get_type();
-
-            return value_stream.str();
         }
 };
