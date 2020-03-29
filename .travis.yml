@@ -4,4 +4,5 @@ addons:
     apt:
         packages:
             - flex
+            - libfl-dev
 script: python3 ./scripts/run_tests.py
