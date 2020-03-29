@@ -1,3 +1,6 @@
 language: cpp
 dist: bionic
+    apt:
+        packages:
+            - flex
 script: python3 ./scripts/run_tests.py
