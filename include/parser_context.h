@@ -16,7 +16,7 @@ class ParserContext {
         ParserContext(): ParserContext(1, 0) {};
         ~ParserContext() {}
 
-        void set_token(Token &new_token)
+        void set_token(const Token &new_token)
         {
             current_token = new_token;
         }

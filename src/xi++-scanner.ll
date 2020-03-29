@@ -13,7 +13,7 @@ int column = 0;
 
 %option debug noyywrap yylineno
 
-ID      [a-z][a-zA-Z0-9'_]*
+ID      [a-zA-Z][a-zA-Z0-9'_]*
 DIGIT   [0-9]
 STRING  \".*\"
 CHAR    \'[a-zA-Z]\'
@@ -46,7 +46,7 @@ false           {
                     TokenType type = TokenType::String;
                     HANDLE_TOKEN;
                 }
-[-]?[0-9]+      {
+{DIGIT}+        {
                     TokenType type = TokenType::Integer;
                     HANDLE_TOKEN;
                 }
@@ -73,12 +73,20 @@ false           {
 "}"         |
 "="         |
 ";"         |
+","         |
 "_"             {
                     TokenType type = TokenType::Symbol;
                     HANDLE_TOKEN;
                 }
 "//".*$         {   /* eat one line comments */  }
-\n              {   column = 0; }
+\n|\r\n         {   column = 0; }
+\'\'            {   TokenType type = TokenType::Error;
+                    std::string msg("empty character literal");
+                    Token new_token(type, msg, lineno(), column + 1);
+                    ctx.set_token(new_token);
+                    column += YYLeng();
+                    return type;
+                }
 .               {   return TokenType::Error;    }
 %%
 

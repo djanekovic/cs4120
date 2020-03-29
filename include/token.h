@@ -28,9 +28,15 @@ class Token {
                     break;
                 case TokenType::Character:
                     type_str += "character ";
+                    // trim '
+                    value.erase(value.begin());
+                    value.erase(value.end() - 1);
                     break;
                 case TokenType::String:
                     type_str += "string ";
+                    // trim "
+                    value.erase(value.begin());
+                    value.erase(value.end() - 1);
                     break;
                 default:;
             }
