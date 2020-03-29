@@ -1,12 +1,17 @@
 %{
 #include "xi_lexer.h"
 #define YY_NO_UNISTD_H
+
 #define yyterminate() return TokenType::End;
-#define HANDLE_TOKEN \
-    Token new_token(type, std::string(YYText()), lineno(), column + 1); \
+
+#define SAVE_AND_RETURN_TOKEN                                            \
     ctx.set_token(new_token);                                           \
     column += YYLeng();                                                 \
     return type
+
+#define HANDLE_TOKEN                                                    \
+    Token new_token(type, std::string(YYText()), lineno(), column + 1); \
+    SAVE_AND_RETURN_TOKEN;
 
 int column = 0;
 %}
@@ -83,9 +88,7 @@ false           {
 \'\'            {   TokenType type = TokenType::Error;
                     std::string msg("empty character literal");
                     Token new_token(type, msg, lineno(), column + 1);
-                    ctx.set_token(new_token);
-                    column += YYLeng();
-                    return type;
+                    SAVE_AND_RETURN_TOKEN;
                 }
 .               {   return TokenType::Error;    }
 %%
