@@ -3,4 +3,6 @@ dist: bionic
     apt:
         packages:
             - flex
+git:
+    depth: false
 script: python3 ./scripts/run_tests.py
