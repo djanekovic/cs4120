@@ -1,5 +1,6 @@
 language: cpp
 dist: bionic
+addons:
     apt:
         packages:
             - flex
