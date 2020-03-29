@@ -3,7 +3,7 @@ import json
 import subprocess
 
 def call_command(args):
-    res = subprocess.run(args)
+    res = subprocess.check_output(args)
     print ("[SH] {} returned {}".format(" ".join(args), res.returncode))
 
 def mkdir(folder):
