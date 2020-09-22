@@ -1,8 +1,6 @@
 language: cpp
 dist: bionic
-addons:
-    apt:
-        packages:
-            - flex
-            - libfl-dev
-script: python3 ./scripts/run_tests.py
+before_install:
+    - mkdir build && cd build && cmake .. && make && cd -
+script:
+    - python3 ./scripts/run_tests.py
