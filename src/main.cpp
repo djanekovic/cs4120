@@ -1,17 +1,44 @@
 #include <cstdio>
-#include <iostream>
+#include <algorithm>
 #include <cassert>
 #include <vector>
-#include <string>
 #include <getopt.h>
 
-#include "xi_driver.h"
+#include "lexer.h"
+
+struct token_formater
+{
+    void operator()(const Token &t) {
+        switch(t.type) {
+            case TokenType::Identifier:
+                printf("%d:%d id %s\n", t.position.line, t.position.cols, t.value.c_str());
+                break;
+            case TokenType::Integer:
+                printf("%d:%d integer %s\n", t.position.line, t.position.cols, t.value.c_str());
+                break;
+            case TokenType::Character:
+                printf("%d:%d character %s\n", t.position.line, t.position.cols, t.value.c_str());
+                break;
+            case TokenType::String:
+                printf("%d:%d string %s\n", t.position.line, t.position.cols, t.value.c_str());
+                break;
+            case TokenType::Symbol:
+                printf("%d:%d %s\n", t.position.line, t.position.cols, t.value.c_str());
+                break;
+            case TokenType::Keyword:
+                printf("%d:%d %s\n", t.position.line, t.position.cols, t.value.c_str());
+                break;
+            case TokenType::Error:
+                printf("%d:%d error:%s\n", t.position.line, t.position.cols, t.value.c_str());
+                break;
+            default:
+                break;
+        }
+    }
+};
 
 int main(int argc, char **argv)
 {
-    XIDriver driver;
-    std::vector<std::string> filenames;
-
     struct option long_options[] = {
         { "help", no_argument, 0, 'h' },
         { "lex", no_argument, 0, 'l'},
@@ -34,14 +61,14 @@ int main(int argc, char **argv)
                 assert(optind < argc);
 
                 for (int i = optind; i < argc; i++) {
-                    filenames.push_back(std::string(argv[i]));
+                    Lexer l (argv[i]);
+                    std::vector<Token> tokens = l.get_tokens();
+                    std::for_each(std::begin(tokens), std::end(tokens), token_formater());
                 }
-
-                driver.trace_scanning(filenames);
 
                 break;
             default:
-                std::cerr << "Option unknown." << std::endl;
+                fprintf(stderr, "Unknown option\n");
         }
 
     }
