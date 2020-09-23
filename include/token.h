@@ -14,12 +14,8 @@ enum class TokenType {
     End
 };
 
-struct Token {
-    TokenType type;
-    Position position;
-    std::string value;
-
-    Token(TokenType type, Position position, std::string value):
-        type{type}, position{position}, value{value} {};
-    Token(TokenType type): type{type} {}
+struct Token final {
+    TokenType const type;
+    Position const position;
+    std::string const value;
 };

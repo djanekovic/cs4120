@@ -6,36 +6,24 @@
 
 #include "lexer.h"
 
-struct token_formater
-{
-    void operator()(const Token &t) {
+
+namespace {
+    constexpr auto stringify_token(Token const &t)
+    {
         switch(t.type) {
-            case TokenType::Identifier:
-                printf("%d:%d id %s\n", t.position.line, t.position.cols, t.value.c_str());
-                break;
-            case TokenType::Integer:
-                printf("%d:%d integer %s\n", t.position.line, t.position.cols, t.value.c_str());
-                break;
-            case TokenType::Character:
-                printf("%d:%d character %s\n", t.position.line, t.position.cols, t.value.c_str());
-                break;
-            case TokenType::String:
-                printf("%d:%d string %s\n", t.position.line, t.position.cols, t.value.c_str());
-                break;
-            case TokenType::Symbol:
-                printf("%d:%d %s\n", t.position.line, t.position.cols, t.value.c_str());
-                break;
-            case TokenType::Keyword:
-                printf("%d:%d %s\n", t.position.line, t.position.cols, t.value.c_str());
-                break;
-            case TokenType::Error:
-                printf("%d:%d error:%s\n", t.position.line, t.position.cols, t.value.c_str());
-                break;
-            default:
-                break;
+            case TokenType::Identifier: return "id";
+            case TokenType::Integer:    return "integer";
+            case TokenType::Character:  return "character";
+            case TokenType::String:     return "string";
+            case TokenType::Error:      return "error";
+            case TokenType::Symbol:     [[fallthrough]];
+            case TokenType::Keyword:    [[fallthrough]];
+            case TokenType::End:        [[fallthrough]];
+            default:                    return "";
         }
     }
-};
+} //anonymous namespace
+
 
 int main(int argc, char **argv)
 {
@@ -62,14 +50,16 @@ int main(int argc, char **argv)
 
                 for (int i = optind; i < argc; i++) {
                     Lexer l (argv[i]);
-                    std::vector<Token> tokens = l.get_tokens();
-                    std::for_each(std::begin(tokens), std::end(tokens), token_formater());
+                    std::vector<Token> const tokens = l.get_tokens();
+                    std::for_each(std::begin(tokens), std::end(tokens),
+                            [] (const auto &t) {
+                                printf("%d:%d %s %s\n", t.position.line, t.position.cols, stringify_token(t), t.value.c_str());
+                            });
                 }
 
                 break;
             default:
                 fprintf(stderr, "Unknown option\n");
         }
-
     }
 }

@@ -1,11 +1,10 @@
 #pragma once
 
-struct Position {
-    unsigned int idx;
-    unsigned int cols;
-    unsigned int line;
+struct Position final{
+    unsigned int idx {0};
+    unsigned int cols {1};
+    unsigned int line {1};
 
-    Position(): idx{0}, cols{1}, line{1} {}
     void newline() { idx++; line++; cols = 1; }
     void advance() { idx++; cols++; }
 };
