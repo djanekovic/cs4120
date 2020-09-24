@@ -23,13 +23,13 @@ Lexer::Lexer(const char *filename)
     std::fseek(file_descriptor.get(), 0, SEEK_SET);
 
     // allocate buffer that we will pass to the string_view
-    file_buffer = std::make_unique<char[]>(filesize);
+    file_buffer = std::vector<char>(filesize);
 
     // read file content in buffer and view that buffer with string_view
     // NOTE: we are using string_view but we are really not using anything from string_view
     // object except size()....
-    assert(std::fread(file_buffer.get(), filesize, 1, file_descriptor.get()) == 1);
-    file = std::string_view{file_buffer.get(), static_cast<size_t>(filesize)};
+    assert(std::fread(file_buffer.data(), filesize, 1, file_descriptor.get()) == 1);
+    file = std::string_view{file_buffer.data(), static_cast<size_t>(filesize)};
 }
 
 
@@ -64,11 +64,9 @@ Token Lexer::get_two_char_token(const std::string& ch)
     const Position start_position = current_position;
 
     current_position.advance();
-    if (file.size() > current_position.idx) {
-        if (file[current_position.idx] == '=') {
-            current_position.advance();
-            return {TokenType::Symbol, start_position, ch + '='};
-        }
+    if ((file.size() > current_position.idx) && (file[current_position.idx] == '=')) {
+        current_position.advance();
+        return {TokenType::Symbol, start_position, ch + '='};
     }
 
     return {TokenType::Symbol, start_position, ch};
@@ -83,12 +81,10 @@ Token Lexer::get_three_char_token(const std::string& ch)
     const Position start_position = current_position;
 
     current_position.advance();
-    if (file.size() > current_position.idx+1) {
-        if (file[current_position.idx] == '>' && file[current_position.idx + 1] == '>') {
-            current_position.advance();
-            current_position.advance();
-            return {TokenType::Symbol, start_position, ch + ">>"};
-        }
+    if ((file.size() > current_position.idx+1) && (file[current_position.idx] == '>' && file[current_position.idx + 1] == '>')) {
+        current_position.advance();
+        current_position.advance();
+        return {TokenType::Symbol, start_position, ch + ">>"};
     }
 
     return {TokenType::Symbol, start_position, ch};
@@ -196,14 +192,14 @@ Token Lexer::advance()
         }
 
         if (is_end()) {
-            return {TokenType::End, {0, 0}, 0};
+            return {TokenType::End};
         }
     }
 
     skip_comments();
 
     if (is_end()) {
-        return {TokenType::End, {0, 0}, 0};
+        return {TokenType::End};
     }
 
     const Position start_position = current_position;
@@ -250,10 +246,10 @@ Token Lexer::advance()
 
         for(;;) {
             if (is_end()) {
-                return {TokenType::End, {0, 0}, 0};
+                return {TokenType::End};
             }
 
-            auto ch = file[current_position.idx];
+            const auto ch = file[current_position.idx];
             if (isalnum(ch) || ch == '\'' ||  ch == '_') {
                 name += ch;
                 current_position.advance();
@@ -282,9 +278,14 @@ std::vector<Token> Lexer::get_tokens()
 
     for (;;) {
         const Token t = Lexer::advance();
+
+        if (t.type == TokenType::End) {
+            break;
+        }
+
         tokens.emplace_back(t);
 
-        if (t.type == TokenType::End || t.type == TokenType::Error) {
+        if (t.type == TokenType::Error) {
             break;
         }
     }

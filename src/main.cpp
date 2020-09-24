@@ -11,15 +11,18 @@ namespace {
     constexpr auto stringify_token(Token const &t)
     {
         switch(t.type) {
-            case TokenType::Identifier: return "id";
-            case TokenType::Integer:    return "integer";
-            case TokenType::Character:  return "character";
-            case TokenType::String:     return "string";
-            case TokenType::Error:      return "error";
-            case TokenType::Symbol:     [[fallthrough]];
-            case TokenType::Keyword:    [[fallthrough]];
-            case TokenType::End:        [[fallthrough]];
-            default:                    return "";
+            case TokenType::Identifier:
+                return "id";
+            case TokenType::Integer:
+                return "integer";
+            case TokenType::Character:
+                return "character";
+            case TokenType::String:
+                return "string";
+            case TokenType::Error:
+                return "error";
+            default:
+                return "";
         }
     }
 } //anonymous namespace
@@ -27,15 +30,15 @@ namespace {
 
 int main(int argc, char **argv)
 {
-    struct option long_options[] = {
-        { "help", no_argument, 0, 'h' },
-        { "lex", no_argument, 0, 'l'},
-        { 0, 0, 0, 0}
+    const std::array long_options {
+        option{ "help", no_argument, nullptr, 'h' },
+        option{ "lex",  no_argument, nullptr, 'l'},
+        option{ nullptr, 0, nullptr, 0}
     };
 
-    while (1) {
-        int option_index = 0, c = 0;
-        c = getopt_long(argc, argv, "", long_options, &option_index);
+    while (true) {
+        int option_index = 0;
+        int c = getopt_long(argc, argv, "", long_options.data(), &option_index);
 
         if (c == -1) {
             break;
@@ -49,8 +52,8 @@ int main(int argc, char **argv)
                 assert(optind < argc);
 
                 for (int i = optind; i < argc; i++) {
-                    Lexer l (argv[i]);
-                    std::vector<Token> const tokens = l.get_tokens();
+                    Lexer l{argv[i]};
+                    const auto tokens = l.get_tokens();
                     std::for_each(std::begin(tokens), std::end(tokens),
                             [] (const auto &t) {
                                 printf("%d:%d %s %s\n", t.position.line, t.position.cols, stringify_token(t), t.value.c_str());

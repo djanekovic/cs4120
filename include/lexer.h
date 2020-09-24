@@ -12,7 +12,7 @@ class Lexer {
     private:
         static constexpr std::array keywords {"if", "else", "while", "return", "length", "int", "bool", "true", "false", "use"};
         Position current_position;
-        std::unique_ptr<char[]> file_buffer;
+        std::vector<char> file_buffer;
         std::string_view file;
 
         Token get_digit_token();
