@@ -2,53 +2,36 @@ import sys, os
 import json
 import subprocess
 
-def call_command(args):
-    print ("[SH] {}".format(" ".join(args)))
-    subprocess.check_output(args)
+xic_binary = "./build/xic"
 
-def mkdir(folder):
-    try:
-        os.mkdir(folder)
-    except FileExistsError as e:
-        pass
+class TestRunner:
+    def run(self):
+        testcases = {}
+        for f in os.listdir(self.test_dir):
+            # get name of test without .xi extension
+            input_file = self.test_dir + f;
+            solution = input_file.replace(".xi", self.solution_extension)
 
-basedir = os.getcwd()
-assert os.path.exists('CMakeLists.txt'), ("CMakeLists.txt is not found in " +
-        basedir + " folder. Please run script from project root " +
-        "folder.")
+            if f.endswith('xi'):
+                # compare output. Command will return 0 if files are identical
+                command = [xic_binary, self.test_flags, input_file, "|", "cmp", solution, "-"]
+                res = subprocess.run(command, shell=True)
 
-mkdir('build')
-os.chdir('build')
-build_dir = os.getcwd()
+                testcases.update({f: not bool(res.returncode)})
 
-call_command(['cmake', '..'])
-call_command(['make'])
+        print ("Test output:")
+        print(json.dumps(testcases, indent=2))
 
-xic_binary = build_dir + "/xic"
+        for (key, value) in testcases.items():
+            if value == False:
+                sys.exit(1)
 
-os.chdir('../tests/pa1')
-mkdir('output')
+class LexerTest(TestRunner):
+    def __init__(self):
+        self.test_dir = "tests/pa1/"
+        self.solution_extension = ".lexedsol"
+        self.test_flags = "--lex"
 
-testcases = {}
-for f in os.listdir('.'):
-    # get name of test without .xi extension
-    basename = os.path.splitext(f)[0]
-
-    if f.endswith('xi'):
-        # out_filename: output/name.xiout
-        out_filename = 'output/' + f + 'out'
-
-        # open file and save the compiler output there
-        with open(out_filename, 'w') as out:
-            subprocess.run([xic_binary, '--lex', f], stdout=out)
-
-        # compare output. Command will return 0 if files are identical
-        res = subprocess.run(['cmp', out_filename, basename + '.lexedsol'])
-        testcases.update({basename: not bool(res.returncode)})
-
-print ("Test output:")
-print(json.dumps(testcases, indent=2))
-
-for i, (key, value) in enumerate(testcases.items()):
-    if value == False:
-        sys.exit(1)
+if __name__ == "__main__":
+    for test in [LexerTest]:
+        test().run()

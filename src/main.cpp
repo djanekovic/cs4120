@@ -1,26 +1,44 @@
 #include <cstdio>
-#include <iostream>
+#include <algorithm>
 #include <cassert>
 #include <vector>
-#include <string>
 #include <getopt.h>
 
-#include "xi_driver.h"
+#include "lexer.h"
+
+
+namespace {
+    constexpr auto stringify_token(Token const &t)
+    {
+        switch(t.type) {
+            case TokenType::Identifier:
+                return "id";
+            case TokenType::Integer:
+                return "integer";
+            case TokenType::Character:
+                return "character";
+            case TokenType::String:
+                return "string";
+            case TokenType::Error:
+                return "error";
+            default:
+                return "";
+        }
+    }
+} //anonymous namespace
+
 
 int main(int argc, char **argv)
 {
-    XIDriver driver;
-    std::vector<std::string> filenames;
-
-    struct option long_options[] = {
-        { "help", no_argument, 0, 'h' },
-        { "lex", no_argument, 0, 'l'},
-        { 0, 0, 0, 0}
+    const std::array long_options {
+        option{ "help", no_argument, nullptr, 'h' },
+        option{ "lex",  no_argument, nullptr, 'l'},
+        option{ nullptr, 0, nullptr, 0}
     };
 
-    while (1) {
-        int option_index = 0, c = 0;
-        c = getopt_long(argc, argv, "", long_options, &option_index);
+    while (true) {
+        int option_index = 0;
+        int c = getopt_long(argc, argv, "", long_options.data(), &option_index);
 
         if (c == -1) {
             break;
@@ -34,15 +52,17 @@ int main(int argc, char **argv)
                 assert(optind < argc);
 
                 for (int i = optind; i < argc; i++) {
-                    filenames.push_back(std::string(argv[i]));
+                    Lexer l{argv[i]};
+                    const auto tokens = l.get_tokens();
+                    std::for_each(std::begin(tokens), std::end(tokens),
+                            [] (const auto &t) {
+                                printf("%d:%d %s %s\n", t.position.line, t.position.cols, stringify_token(t), t.value.c_str());
+                            });
                 }
-
-                driver.trace_scanning(filenames);
 
                 break;
             default:
-                std::cerr << "Option unknown." << std::endl;
+                fprintf(stderr, "Unknown option\n");
         }
-
     }
 }
